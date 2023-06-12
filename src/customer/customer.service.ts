@@ -31,7 +31,7 @@ export class CustomerService {
     return undefined;
   }
 
-  async findUserByEmail(email: string): Promise<CustomerEntity> {
+  async findByEmail(email: string): Promise<CustomerEntity> {
     return await this.customerRepository.findOneBy({ email });
   }
 }

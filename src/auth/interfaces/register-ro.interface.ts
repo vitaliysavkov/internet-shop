@@ -1,5 +1,16 @@
+import { CustomerEntity } from '../../customer/entities/customer.entity';
+
 export interface RegisterRO {
-    success: boolean;
-    message: string;
-    errors?: string[];
+    customer: CustomerEntity;
+    tokens: Tokens;
+}
+
+interface Tokens {
+    accessToken: Token;
+    refreshToken: Token;
+}
+
+interface Token {
+    value: string;
+    expiresIn: number;
 }

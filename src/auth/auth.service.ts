@@ -1,8 +1,8 @@
 import {
     BadRequestException,
-    HttpException,
+    ConflictException,
     Injectable,
-    InternalServerErrorException
+    InternalServerErrorException,
 } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -23,15 +23,16 @@ export class AuthService {
         private readonly jwtService: JwtService,
     ) {
     }
-    async register(dto: RegisterDto): Promise<RegisterRO> {
+    async register(dto: RegisterDto, domain: string): Promise<RegisterRO> {
+        const { email } = dto;
+        const customer = await this.customerService.findByEmail(email);
+        if (customer) {
+            throw new ConflictException();
+        }
         try {
-            const customer  = await this.customerService.create(dto);
-            console.log(customer);
+            const newCustomer= await this.customerService.create(dto);
 
-            return {
-                success: true,
-                message: 'Customer registered.',
-            };
+            return await this.generateTokens(newCustomer, domain);
         } catch (error) {
             if (error instanceof TypeORMError) {
                 throw new InternalServerErrorException('Failed to register customer.');
@@ -43,7 +44,7 @@ export class AuthService {
 
     async login(dto: LoginDto, domain) {
         const { email, password } = dto;
-        const customer = await this.customerService.findUserByEmail(email);
+        const customer = await this.customerService.findByEmail(email);
 
         if (!customer || !match(customer?.password, password)) {
             throw new BadRequestException('Invalid email or password.');

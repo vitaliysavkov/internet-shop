@@ -12,7 +12,11 @@ import { RegisterDto } from './dto/register.dto';
 import { RegisterRO } from './interfaces/register-ro.interface';
 import { LoginRO } from './interfaces/login-ro.interface';
 import { LoginDto } from './dto/login.dto';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Public } from '../shared/decorators/public.decorator';
 
 @ApiTags('Auth Controller')
@@ -21,15 +25,25 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @ApiConflictResponse()
+  @HttpCode(HttpStatus.CREATED)
   @Post('/register')
-  async register(@Body() createCustomerDto: RegisterDto): Promise<RegisterRO> {
-    return this.authService.register(createCustomerDto);
+  async register(
+      @Body() createCustomerDto: RegisterDto,
+      @Req() req: Request
+  ): Promise<RegisterRO> {
+    const origin = req.headers['origin'];
+    return this.authService.register(createCustomerDto, origin);
   }
 
   @Public()
+  @ApiBadRequestResponse()
   @HttpCode(HttpStatus.OK)
   @Post('/login')
-  async login(@Body() loginCustomerDto: LoginDto, @Req() req: Request): Promise<LoginRO> {
+  async login(
+      @Body() loginCustomerDto: LoginDto,
+      @Req() req: Request
+  ): Promise<LoginRO> {
     const origin = req.headers['origin'];
     return this.authService.login(loginCustomerDto, origin);
   }
