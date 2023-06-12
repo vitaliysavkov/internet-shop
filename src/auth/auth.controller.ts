@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Post,
   Req,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -18,14 +19,16 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../shared/decorators/public.decorator';
+import { EraseSensitiveDataInterceptor } from './interceptors/erase-sensitive-data-interceptor.service';
 
 @ApiTags('Auth Controller')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Public()
   @ApiConflictResponse()
+  @Public()
+  @UseInterceptors(EraseSensitiveDataInterceptor)
   @HttpCode(HttpStatus.CREATED)
   @Post('/register')
   async register(
@@ -36,8 +39,9 @@ export class AuthController {
     return this.authService.register(createCustomerDto, origin);
   }
 
-  @Public()
   @ApiBadRequestResponse()
+  @Public()
+  @UseInterceptors(EraseSensitiveDataInterceptor)
   @HttpCode(HttpStatus.OK)
   @Post('/login')
   async login(

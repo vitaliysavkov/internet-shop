@@ -8,7 +8,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { CustomerService } from '../customer/customer.service';
 import { TypeORMError } from 'typeorm';
-import { match } from '../utils/crypt.utils';
+import { encrypt, match } from '../utils/crypt.utils';
 import { LoginRO } from './interfaces/login-ro.interface';
 import { CustomerEntity } from '../customer/entities/customer.entity';
 import { ConfigService } from '@nestjs/config';
@@ -24,13 +24,14 @@ export class AuthService {
     ) {
     }
     async register(dto: RegisterDto, domain: string): Promise<RegisterRO> {
-        const { email } = dto;
+        const { email, password} = dto;
         const customer = await this.customerService.findByEmail(email);
         if (customer) {
             throw new ConflictException();
         }
         try {
-            const newCustomer= await this.customerService.create(dto);
+            const hashedPassword = encrypt(password);
+            const newCustomer= await this.customerService.create({ ...dto, password: hashedPassword });
 
             return await this.generateTokens(newCustomer, domain);
         } catch (error) {
