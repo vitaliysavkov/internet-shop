@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +22,17 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: configService.get('APP_VERSION'),
   });
+
+  if (configService.get('APP_ENV') !== 'production') {
+    const config = new DocumentBuilder()
+        .setTitle('ONLINE_SHOP REST API')
+        .setDescription('Public endpoints')
+        .setVersion(configService.get('APP_VERSION'))
+        .addBearerAuth()
+        .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
