@@ -4,6 +4,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -34,7 +35,16 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true
+      }),
+  );
+
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
+  app.enableCors();
 
   await app.listen(+configService.get('APP_PORT') || 3000);
 }

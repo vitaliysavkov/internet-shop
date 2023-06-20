@@ -5,6 +5,8 @@ import {
   HttpStatus,
   Post,
   Req,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -14,18 +16,24 @@ import { LoginRO } from './interfaces/login-ro.interface';
 import { LoginDto } from './dto/login.dto';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
+  ApiForbiddenResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../shared/decorators/public.decorator';
+import { EraseSensitiveDataInterceptor } from './interceptors/erase-sensitive-data-interceptor.service';
+import { JwtRefreshGuard } from '../shared/guards/jwt-refresh.guard';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Auth Controller')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Public()
   @ApiConflictResponse()
+  @Public()
+  @UseInterceptors(EraseSensitiveDataInterceptor)
   @HttpCode(HttpStatus.CREATED)
   @Post('/register')
   async register(
@@ -36,8 +44,9 @@ export class AuthController {
     return this.authService.register(createCustomerDto, origin);
   }
 
-  @Public()
   @ApiBadRequestResponse()
+  @Public()
+  @UseInterceptors(EraseSensitiveDataInterceptor)
   @HttpCode(HttpStatus.OK)
   @Post('/login')
   async login(
@@ -46,5 +55,20 @@ export class AuthController {
   ): Promise<LoginRO> {
     const origin = req.headers['origin'];
     return this.authService.login(loginCustomerDto, origin);
+  }
+
+  @ApiBearerAuth()
+  @ApiBadRequestResponse()
+  @ApiForbiddenResponse()
+  @UseInterceptors(EraseSensitiveDataInterceptor)
+  @UseGuards(JwtRefreshGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('/refresh')
+  async refresh(
+      @Body() dto: RefreshTokenDto,
+      @Req() req: Request,
+  ): Promise<LoginRO> {
+    const origin = req.headers['origin'];
+    return await this.authService.refresh(dto, origin);
   }
 }
