@@ -1,8 +1,10 @@
 import {
     BadRequestException,
     ConflictException,
+    ForbiddenException,
     Injectable,
     InternalServerErrorException,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -14,6 +16,9 @@ import { CustomerEntity } from '../customer/entities/customer.entity';
 import { ConfigService } from '@nestjs/config';
 import { JwtService} from '@nestjs/jwt';
 import { RegisterRO } from './interfaces/register-ro.interface';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { TokenExpiredError } from 'jsonwebtoken';
+import { JWT } from './interfaces/jwt';
 
 @Injectable()
 export class AuthService {
@@ -54,6 +59,39 @@ export class AuthService {
         return await this.generateTokens(customer, domain);
     }
 
+    async refresh(
+        { refreshToken }: RefreshTokenDto,
+        domain: string,
+    ): Promise<LoginRO> {
+        try {
+            await this.jwtService.verify(refreshToken, {
+                secret: this.configService.get('JWT_REFRESH_SECRET'),
+                ignoreExpiration: false,
+            });
+        } catch (e) {
+            if (e instanceof TokenExpiredError) {
+                throw new UnauthorizedException(
+                    'Your token has expired. Please re-login.',
+                );
+            }
+
+            throw new BadRequestException('The provided token is invalid.');
+        }
+
+        const decoded = (this.jwtService.decode(refreshToken, {
+            complete: true,
+            json: true,
+        })) as JWT;
+
+        const user = await this.customerService.findById(+decoded.payload.sub);
+
+        if (!user) {
+            throw new ForbiddenException('Access denied.');
+        }
+
+        return await this.generateTokens(user, domain);
+    }
+
     private async generateTokens(
         customer: CustomerEntity,
         domain: string,
@@ -66,7 +104,7 @@ export class AuthService {
                 },
                 {
                     secret: this.configService.get('JWT_SECRET'),
-                    expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN')
+                    expiresIn: +this.configService.get('JWT_ACCESS_EXPIRES_IN')
                 },
             ),
             this.jwtService.sign(

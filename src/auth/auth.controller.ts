@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Post,
   Req,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { Request } from 'express';
@@ -15,11 +16,15 @@ import { LoginRO } from './interfaces/login-ro.interface';
 import { LoginDto } from './dto/login.dto';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
+  ApiForbiddenResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../shared/decorators/public.decorator';
 import { EraseSensitiveDataInterceptor } from './interceptors/erase-sensitive-data-interceptor.service';
+import { JwtRefreshGuard } from '../shared/guards/jwt-refresh.guard';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Auth Controller')
 @Controller('auth')
@@ -50,5 +55,20 @@ export class AuthController {
   ): Promise<LoginRO> {
     const origin = req.headers['origin'];
     return this.authService.login(loginCustomerDto, origin);
+  }
+
+  @ApiBearerAuth()
+  @ApiBadRequestResponse()
+  @ApiForbiddenResponse()
+  @UseInterceptors(EraseSensitiveDataInterceptor)
+  @UseGuards(JwtRefreshGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('/refresh')
+  async refresh(
+      @Body() dto: RefreshTokenDto,
+      @Req() req: Request,
+  ): Promise<LoginRO> {
+    const origin = req.headers['origin'];
+    return await this.authService.refresh(dto, origin);
   }
 }
