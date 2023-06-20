@@ -37,8 +37,8 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @Post('/register')
   async register(
-      @Body() createCustomerDto: RegisterDto,
-      @Req() req: Request
+    @Body() createCustomerDto: RegisterDto,
+    @Req() req: Request,
   ): Promise<RegisterRO> {
     const origin = req.headers['origin'];
     return this.authService.register(createCustomerDto, origin);
@@ -50,8 +50,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('/login')
   async login(
-      @Body() loginCustomerDto: LoginDto,
-      @Req() req: Request
+    @Body() loginCustomerDto: LoginDto,
+    @Req() req: Request,
   ): Promise<LoginRO> {
     const origin = req.headers['origin'];
     return this.authService.login(loginCustomerDto, origin);
@@ -65,8 +65,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('/refresh')
   async refresh(
-      @Body() dto: RefreshTokenDto,
-      @Req() req: Request,
+    @Body() dto: RefreshTokenDto,
+    @Req() req: Request,
   ): Promise<LoginRO> {
     const origin = req.headers['origin'];
     return await this.authService.refresh(dto, origin);

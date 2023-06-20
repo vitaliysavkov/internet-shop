@@ -4,8 +4,8 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm/dist/interfaces/typeorm-op
 import { createTypeOrmOptions } from './database.service';
 
 export const DatabaseModule = TypeOrmModule.forRootAsync({
-    inject: [ConfigService],
-    useFactory: (configService: ConfigService): TypeOrmModuleOptions => ({
-        ...createTypeOrmOptions(configService),
-    }),
+  inject: [ConfigService],
+  useFactory: (configService: ConfigService): TypeOrmModuleOptions => ({
+    ...createTypeOrmOptions(configService),
+  }),
 });

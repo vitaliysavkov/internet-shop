@@ -13,7 +13,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  const authGuard= await app.get(JwtAuthGuard);
+  const authGuard = await app.get(JwtAuthGuard);
 
   // To make endpoint public
   // Use @Public() decorator
@@ -26,20 +26,20 @@ async function bootstrap() {
 
   if (configService.get('APP_ENV') !== 'production') {
     const config = new DocumentBuilder()
-        .setTitle('ONLINE_SHOP REST API')
-        .setDescription('Public endpoints')
-        .setVersion(configService.get('APP_VERSION'))
-        .addBearerAuth()
-        .build();
+      .setTitle('ONLINE_SHOP REST API')
+      .setDescription('Public endpoints')
+      .setVersion(configService.get('APP_VERSION'))
+      .addBearerAuth()
+      .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);
   }
 
   app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true
-      }),
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
   );
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
