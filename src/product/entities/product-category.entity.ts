@@ -1,14 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
+import { ProductEntity } from './product.entity';
+import { ProductCategoryEnum } from '../enums/product-category.enum';
 
-@Entity({ name: 'customers' })
-export class CustomerEntity {
+@Entity({ name: 'product_categories' })
+export class ProductCategoryEntity {
   @ApiProperty({ type: Number })
   @PrimaryGeneratedColumn()
   id: number;
@@ -16,31 +19,11 @@ export class CustomerEntity {
   @ApiProperty({ type: String })
   @Column({
     unique: true,
-    length: 255,
+    type: 'enum',
+    enum: ProductCategoryEnum,
     nullable: false,
-  })
-  email: string;
-
-  @ApiProperty({ type: String })
-  @Column({
-    length: 100,
-    nullable: false,
-  })
-  password: string;
-
-  @ApiProperty({ type: String })
-  @Column({
-    length: 30,
-    nullable: true,
   })
   name: string;
-
-  @ApiProperty({ type: String })
-  @Column({
-    length: 15,
-    nullable: true,
-  })
-  phone: string;
 
   @ApiProperty({ type: Date })
   @CreateDateColumn()
@@ -49,4 +32,7 @@ export class CustomerEntity {
   @ApiProperty({ type: Date })
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany((type) => ProductEntity, (product) => product.category)
+  products: ProductEntity[];
 }

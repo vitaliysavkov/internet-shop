@@ -1,5 +1,5 @@
 export interface ChangePasswordRO {
-    success: boolean;
-    message: string;
-    errors?: string[];
+  success: boolean;
+  message: string;
+  errors?: string[];
 }

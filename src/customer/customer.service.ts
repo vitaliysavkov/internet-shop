@@ -6,12 +6,11 @@ import { RegisterDto } from '../auth/dto/register.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdatePhoneNumberDto } from './dto/update-phone-number.dto';
 
-
 @Injectable()
 export class CustomerService {
   constructor(
-      @InjectRepository(CustomerEntity)
-      private readonly customerRepository: Repository<CustomerEntity>,
+    @InjectRepository(CustomerEntity)
+    private readonly customerRepository: Repository<CustomerEntity>,
   ) {}
 
   async create(dto: RegisterDto): Promise<CustomerEntity> {

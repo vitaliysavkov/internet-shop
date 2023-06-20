@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Body,
-  Patch,
-  Req,
-} from '@nestjs/common';
+import { Controller, Body, Patch, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { CustomerService } from './customer.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -19,8 +14,8 @@ export class CustomerController {
 
   @Patch(':id')
   async changePassword(
-      @Req() req: Request,
-      @Body() changePasswordDto: ChangePasswordDto
+    @Req() req: Request,
+    @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<ChangePasswordRO> {
     const customerId = req.customer.id;
     return this.customerService.changePassword(customerId, changePasswordDto);
@@ -28,10 +23,13 @@ export class CustomerController {
 
   @Patch(':id')
   async updatePhoneNumber(
-      @Req() req: Request,
-      @Body() updatePhoneNumberDto: UpdatePhoneNumberDto
+    @Req() req: Request,
+    @Body() updatePhoneNumberDto: UpdatePhoneNumberDto,
   ): Promise<UpdatePhoneNumberRO> {
     const customerId = req.customer.id;
-    return this.customerService.updatePhoneNumber(customerId, updatePhoneNumberDto);
+    return this.customerService.updatePhoneNumber(
+      customerId,
+      updatePhoneNumberDto,
+    );
   }
 }
